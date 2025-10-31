@@ -5,6 +5,7 @@ import time
 import boto3
 import requests
 
+# Populating your SQS Queue with a UVA id 
 @task 
 def populate_queue():
     """Make my queue using my uva ID"""
@@ -20,7 +21,7 @@ def populate_queue():
     print(f"SQS queue created: {sqs_url}")
     return sqs_url
 
-
+# Waiting until all 21 messages are ready 
 @task
 def wait_for_messages(sqs_url):
     """Keep checking the queue until all 21 messages show up"""
@@ -53,6 +54,7 @@ def wait_for_messages(sqs_url):
         print("Still waiting for messages")
         time.sleep(10)
 
+# Recieving, parsing, and deleting all messages
 @task
 def get_messages(sqs_url):
     """Recieve and delete all 21 messgaes from the queue"""
@@ -67,7 +69,7 @@ def get_messages(sqs_url):
             WaitTimeSeconds=10
         )
 
-        # Check if there are any messages available
+        # Checking to see if there are any messages available
         if "Messages" in response:
             for message in response["Messages"]:
                 message_attributes = message["MessageAttributes"]
@@ -89,7 +91,6 @@ def get_messages(sqs_url):
 
     print("Done collecting all messages")
     return all_messages
-
 
 @task
 def assemble_phrase(messages):
@@ -120,7 +121,7 @@ def submit_solution(phrase):
     print("Submission response:", response["ResponseMetadata"]["HTTPStatusCode"])
     return response
 
-
+# Submitting Phrase
 @flow(name="dp2-pipeline")
 def main_flow():
     """Main Prefect flow to run all the above steps by order"""
